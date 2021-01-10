@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>word cloud示例</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <script src="d3.min.js"></script>
+        <script src="cloud.js"></script>
+    </head>
+    <body>
+        <div id="viz">
+            <svg style="width:500px;height:500px;" viewBox="0 0 1000 1000"></svg>
+        </div>
+        <script>
+            var data = [{"word":"车厘子价格腰斩","cnt":3334224},{"word":"石家庄7地调整为中风险","cnt":2548969},{"word":"王中磊儿子长大了","cnt":2272443},{"word":"宋运辉程开颜离婚","cnt":1995554},{"word":"急寻曾乘坐京P18E77网约车的乘客","cnt":1152007},{"word":"冬日牛奶妆","cnt":1075022},{"word":"滴滴花小猪因多名网约车司机确诊被罚","cnt":1009442},{"word":"美国各大软件联合封杀特朗普","cnt":853494},{"word":"TVB颁奖礼","cnt":825592},{"word":"宋丹丹今年不会上央视春晚","cnt":801533},{"word":"国考成绩","cnt":723574},{"word":"李菲儿","cnt":715611},{"word":"杨柯有女朋友","cnt":691666},{"word":"埋堆堆崩了","cnt":684704},{"word":"北京新增本土病例确诊前曾自行服药","cnt":678740},{"word":"邓超报销网友打车费","cnt":663991},{"word":"76天","cnt":659579},{"word":"赵丽颖喊话孙坚送殷沛下线","cnt":648167},{"word":"冻死乌龟下锅后突然活了","cnt":644528},{"word":"欢乐喜剧人谁是7","cnt":635146},{"word":"令人惊艳的明星清冷感","cnt":605222},{"word":"新闻联播","cnt":539484},{"word":"国考成绩 银保监","cnt":537580},{"word":"哲仁王后","cnt":512889},{"word":"石家庄计划2天做完第二轮核酸检测","cnt":480540},{"word":"流金岁月","cnt":478985},{"word":"河北卡车司机车上睡觉不住宾馆","cnt":472035},{"word":"王妃的衣橱有多美","cnt":448243},{"word":"退休局长不戴口罩强行出门被行拘","cnt":447467},{"word":"国家安全部推出形象宣传片","cnt":419032},{"word":"给男朋友听热恋期时的语音","cnt":402288},{"word":"柯滢挑衅封潇声","cnt":400847},{"word":"欢乐喜剧人","cnt":383709},{"word":"有翡","cnt":380183},{"word":"公安部举行升警旗仪式","cnt":376171},{"word":"心疼宋运辉","cnt":372206},{"word":"20岁小姐姐当汽车兵驰骋川藏线","cnt":350712},{"word":"王骁演技","cnt":326643},{"word":"原来投影仪还能这么玩","cnt":321496},{"word":"北京严格控制村内聚集性活动","cnt":311752},{"word":"河北援鄂护士再出征第一天被认出","cnt":307462},{"word":"Ning 恭喜iG首胜","cnt":303032},{"word":"大江大河","cnt":297921},{"word":"蔡思贝TVB最佳女主角","cnt":290661},{"word":"四川倡导务工人员就地过年","cnt":287478},{"word":"送你一朵小红花","cnt":285840},{"word":"XUN豹女","cnt":261699},{"word":"西贝称楚学友微博非西贝立场","cnt":259911},{"word":"石家庄疫情防控发布会","cnt":241179},{"word":"国考申论","cnt":240864}]
+            for (let inx = 0; inx < data.length; ++inx) {
+                data[inx].cnt = Math.floor(data[inx].cnt)
+            }
+            var fill = d3.scaleOrdinal(d3.schemeCategory10);;
+            var max = d3.max(data, item => item.cnt)
+            var min = d3.min(data, item => item.cnt)
+            var wordScale = d3.scaleLinear().domain([min, max]).range([30, 150])
+            d3.cloud()
+            .size([1000, 1000])
+            .words(data)
+            .rotate(d => d.word.length > 6 ? 0: 90) //避免重叠
+            .text(d => d.word) // 避免词语重叠
+            .fontSize(d => wordScale(d.cnt))
+            .on("end", draw)
+            .start()
+
+            function draw(words){
+                var wordG = d3.select("svg").append("g")
+                    .attr("id", "wordCloudG").attr("transform","translate(500,500)");
+                wordG.selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                    .style("font-size", d => d.size + "px")
+                    .style("fill", function(d, i) { return fill(i); })
+                    .attr("text-anchor", "middle")
+                    .attr("transform", d => `translate(${[d.x, d.y]}) rotate(${d.rotate})`) // rotate避免重叠
+                    .text(d => d.word);                
+            }
+        </script>
+    </body>
+</html>
