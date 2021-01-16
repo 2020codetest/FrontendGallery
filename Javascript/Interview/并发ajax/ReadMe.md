@@ -1,1 +1,3 @@
-主知识点在于递归调用，如果需要等待最总结果，只需要使用Promise.all即可。由于递归的一直存在，到叶子节点的时候会存在N个promise，空间消耗必然很大。可以使用另外一种分组的方式来释放promise的空间。在第一组Promise结束之后，简单地生成新的Promise放入新的promise数组，调用方做await Promise.all既可以，就的Promise数组可以释放了。因此最终最多2组promise数组。
+主知识点在于递归调用，如果需要等待最总结果，只需要使用Promise.all即可。由于递归的一直存在，到叶子节点的时候会存在N个promise，空间消耗必然很大。
+<br/>
+可以使用另外一种方式，当请求结束的时候将生成的请求promise放到next数组中，主函数不停循环等到next数组中的Promise即可。
