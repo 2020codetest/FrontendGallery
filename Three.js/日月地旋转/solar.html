@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>太阳地球月亮旋转体系</title>
+        <style>
+            body {
+                margin: 0;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #c {
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="c"></canvas>
+        <script src="three.js"></script>
+        <script>
+            // 生成星云图
+            function cloud() {
+                const vertices = [];
+                for ( let i = 0; i < 6000; i ++ ) {
+                    var x = THREE.MathUtils.randFloatSpread(1000);
+                    var y = THREE.MathUtils.randFloatSpread(1000);
+                    var z = THREE.MathUtils.randFloatSpread(1000);
+                    if (x *x + y * y <= 2500) {
+                        // 为了演示效果，去除在太阳内部的点
+                        continue;
+                    }
+
+                    vertices.push( x, y, z );
+                }
+
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+                const material = new THREE.PointsMaterial( { color: 0xffffff } );
+                const points = new THREE.Points( geometry, material );
+                return points;
+            }
+
+            // 生成地球围绕太阳转的轨迹图
+            function generateEarthCircle() {
+                const geometry = new THREE.RingGeometry( 100, 100.5, 64 );
+                const material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true } );
+                const circle = new THREE.Mesh( geometry, material );
+                return circle
+            }
+
+            // 生成月球围绕地球转的轨迹图
+            function generateMoonCircle() {
+                const geometry = new THREE.RingGeometry( 30, 30.5, 32 );
+                const material = new THREE.MeshBasicMaterial( { color: 0xff00ff, wireframe: true } );
+                const circle = new THREE.Mesh( geometry, material );
+                return circle
+            }
+
+            function main() {
+                const canvas = document.querySelector('#c');
+                const renderer = new THREE.WebGLRenderer({canvas});
+
+                const fov = 60;
+                const aspect = window.innerWidth / window.innerHeight
+                const near = 100;
+                const far = 1000;
+                const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+                camera.position.set(0, 0, 500);
+                camera.lookAt(0, 0, 0);
+
+                const scene = new THREE.Scene();
+                scene.add(cloud())
+                scene.add(generateEarthCircle())
+                const objects = [];
+
+                const radius = 10;
+                const widthSegments = 60;
+                const heightSegments = 60;
+                const sphereGeometry = new THREE.SphereGeometry(
+                    radius, widthSegments, heightSegments);
+
+                const solarSystem = new THREE.Object3D();
+                scene.add(solarSystem);
+                // 生成地球围绕太阳转的效果
+                objects.push(solarSystem);
+
+                const sunMaterial = new THREE.MeshPhongMaterial({emissive: 0xFFFF00});
+                const sunMesh = new THREE.Mesh(sphereGeometry, sunMaterial);
+                sunMesh.scale.set(3, 3, 3);
+                new THREE.TextureLoader().load("img/sun.jpg", (texture) => {
+                    const material = new THREE.MeshBasicMaterial({map: texture})
+                    sunMesh.material = material
+                })
+                solarSystem.add(sunMesh);
+                // 生成太阳自传的效果
+                objects.push(sunMesh);
+
+                const earthOrbit = new THREE.Object3D();
+                earthOrbit.position.x = 100;
+                solarSystem.add(earthOrbit);
+                // 生成月球围绕地球转的效果
+                objects.push(earthOrbit);
+
+                const earthMaterial = new THREE.MeshPhongMaterial({emissive: 0xFFFF00});
+                const earthMesh = new THREE.Mesh(sphereGeometry, earthMaterial);
+                new THREE.TextureLoader().load("img/earth.jpg", (texture) => {
+                    const material = new THREE.MeshBasicMaterial({map: texture})
+                    earthMesh.material = material
+                })
+
+                earthOrbit.add(earthMesh);
+                // 生成地球自转的效果
+                objects.push(earthMesh)
+                const moonOrbit = new THREE.Object3D();
+                moonOrbit.position.x = 30;
+                earthOrbit.add(moonOrbit);
+                earthOrbit.add(generateMoonCircle());
+
+                const moonMaterial = new THREE.MeshPhongMaterial({emissive: 0xFFFF00});
+                const moonMesh = new THREE.Mesh(sphereGeometry, moonMaterial);
+                new THREE.TextureLoader().load("img/moon.jpg", (texture) => {
+                    const material = new THREE.MeshBasicMaterial({map: texture})
+                    moonMesh.material = material
+                })
+
+                moonMesh.scale.set(.5, .5, .5);
+                moonOrbit.add(moonMesh);
+                // 生成月球自转的效果
+                objects.push(moonMesh);
+
+                function resizeRendererToDisplaySize(renderer) {
+                    const canvas = renderer.domElement;
+                    const width = canvas.clientWidth;
+                    const height = canvas.clientHeight;
+                    const needResize = canvas.width !== width || canvas.height !== height;
+                    if (needResize) {
+                        renderer.setSize(width, height, false);
+                    }
+                    return needResize;
+                }
+
+                function render(time) {
+                    time *= 0.0005;
+
+                    if (resizeRendererToDisplaySize(renderer)) {
+                        const canvas = renderer.domElement;
+                        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                        camera.updateProjectionMatrix();
+                    }
+
+                    objects.forEach((obj) => {
+                        if (obj === earthMesh) {
+                            earthMesh.rotation.z = 2 * time
+                        }
+                        else if (obj === earthOrbit) {
+                            earthOrbit.rotation.z = 5 * time
+                        }
+                        else if (obj === moonMesh) {
+                            moonMesh.rotation.z = 20 * time
+                        }
+                        else {
+                            obj.rotation.z = time;
+                        }
+                    });
+
+                    renderer.render(scene, camera);
+
+                    requestAnimationFrame(render);
+                }
+
+                requestAnimationFrame(render);
+            }
+
+            main();
+        </script>
+    </body>
+</html>
