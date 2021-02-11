@@ -88,13 +88,10 @@
                 // 生成地球围绕太阳转的效果
                 objects.push(solarSystem);
 
-                const sunMaterial = new THREE.MeshPhongMaterial({emissive: 0xFFFF00});
+                const textureLoader = new THREE.TextureLoader()
+                const sunMaterial = new THREE.MeshBasicMaterial({map: textureLoader.load("img/sun.jpg")});
                 const sunMesh = new THREE.Mesh(sphereGeometry, sunMaterial);
                 sunMesh.scale.set(3, 3, 3);
-                new THREE.TextureLoader().load("img/sun.jpg", (texture) => {
-                    const material = new THREE.MeshBasicMaterial({map: texture})
-                    sunMesh.material = material
-                })
                 solarSystem.add(sunMesh);
                 // 生成太阳自传的效果
                 objects.push(sunMesh);
@@ -105,12 +102,8 @@
                 // 生成月球围绕地球转的效果
                 objects.push(earthOrbit);
 
-                const earthMaterial = new THREE.MeshPhongMaterial({emissive: 0xFFFF00});
+                const earthMaterial = new THREE.MeshBasicMaterial({map: textureLoader.load("img/earth.jpg")});
                 const earthMesh = new THREE.Mesh(sphereGeometry, earthMaterial);
-                new THREE.TextureLoader().load("img/earth.jpg", (texture) => {
-                    const material = new THREE.MeshBasicMaterial({map: texture})
-                    earthMesh.material = material
-                })
 
                 earthOrbit.add(earthMesh);
                 // 生成地球自转的效果
@@ -120,12 +113,8 @@
                 earthOrbit.add(moonOrbit);
                 earthOrbit.add(generateMoonCircle());
 
-                const moonMaterial = new THREE.MeshPhongMaterial({emissive: 0xFFFF00});
+                const moonMaterial = new THREE.MeshBasicMaterial({map: textureLoader.load("img/moon.jpg")});
                 const moonMesh = new THREE.Mesh(sphereGeometry, moonMaterial);
-                new THREE.TextureLoader().load("img/moon.jpg", (texture) => {
-                    const material = new THREE.MeshBasicMaterial({map: texture})
-                    moonMesh.material = material
-                })
 
                 moonMesh.scale.set(.5, .5, .5);
                 moonOrbit.add(moonMesh);
