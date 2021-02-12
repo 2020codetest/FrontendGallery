@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>掷色子</title>
+        <style>
+            body {
+                margin: 0;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #c {
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="c"></canvas>
+        <script src="three.js"></script>
+        <script src="OrbitControls.js"></script>
+        <script>
+            const canvas = document.querySelector("#c");
+            const renderer = new THREE.WebGLRenderer({canvas:canvas, antialias: true});
+            const scene = new THREE.Scene();
+            function createDice() {
+                const scene = new THREE.Object3D();
+                const textureLoader = new THREE.TextureLoader();
+                const geometry = new THREE.PlaneGeometry(50, 50, 50);
+                const material1 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("1.png")});
+                const dice1 = new THREE.Mesh(geometry, material1);
+                dice1.rotation.x = Math.PI / 2;
+                dice1.position.y = -25
+                scene.add(dice1);
+
+                const material2 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("2.png")});
+                const dice2 = new THREE.Mesh(geometry, material2)
+                dice2.position.z = 25
+                scene.add(dice2);
+
+                const material3 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("3.png")});
+                const dice3 = new THREE.Mesh(geometry, material3)
+                dice3.rotation.y = Math.PI / 2;
+                dice3.position.x = 25;
+                scene.add(dice3); 
+
+                const material4 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("4.png")});
+                const dice4 = new THREE.Mesh(geometry, material4)
+                dice4.rotation.x = Math.PI
+                dice4.rotation.z = Math.PI
+                dice4.position.z = -25;
+                scene.add(dice4); 
+
+                const material5 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("5.png")});
+                const dice5 = new THREE.Mesh(geometry, material5)
+                dice5.rotation.y  = -Math.PI / 2;
+                dice5.position.x = -25;
+                scene.add(dice5); 
+
+                const material6 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("6.png")});
+                const dice6 = new THREE.Mesh(geometry, material6)
+                dice6.rotation.x = -Math.PI / 2;
+                dice6.position.y = 25;
+                scene.add(dice6);  
+                return scene;               
+            }
+
+            function randomDice(dice, xlow, xhigh) {
+                var rotate = Math.floor(Math.random() * 4)
+                var x = 0
+                if (rotate == 1) {
+                    x = Math.PI / 2
+                }
+                else if (rotate == 2) {
+                    x = Math.PI
+                }
+                else if (rotate == 3) {
+                    x = -Math.PI / 2
+                }
+
+                dice.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), x)
+
+                var z = 0
+                rotate = Math.floor(Math.random() * 4)
+                if (rotate == 1) {
+                    z = Math.PI / 2
+                }
+                else if (rotate == 2) {
+                    z = Math.PI
+                }
+                else if (rotate == 3) {
+                    z = -Math.PI / 2
+                }
+
+                dice.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), z)
+
+                var y = Math.random() * Math.PI
+                dice.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), y)
+
+                dice.position.x = Math.random() * (xhigh - xlow) + xlow
+                dice.position.z = (Math.random() * 2 - 1) * 50
+                return dice
+            }
+
+            function createBoard() {
+                const geometry = new THREE.PlaneGeometry( 1000, 1000, 32 );
+                const material = new THREE.MeshBasicMaterial( {color: 0xcccccc, side: THREE.DoubleSide} );
+                const plane = new THREE.Mesh( geometry, material );
+                plane.rotation.x = Math.PI / 2;
+                plane.position.y = -25
+                return plane;
+            }
+
+            const board = createBoard();
+            scene.add(board);
+            const dice1 = randomDice(createDice(), -300, -150);
+            const dice2 = randomDice(createDice(), -100, 100);
+            const dice3 = randomDice(createDice(), 150, 300);
+            scene.add(dice1);
+            scene.add(dice2);
+            scene.add(dice3);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height, false);
+            const k = width / height;
+            const s = 500;
+            const camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 6000);
+            camera.position.set(500, 300, 500);
+            camera.lookAt(scene.position);
+            function render() {
+                renderer.render(scene, camera)
+                requestAnimationFrame(render)
+            }
+
+            requestAnimationFrame(render);
+            new THREE.OrbitControls(camera,  renderer.domElement);
+        </script>
+    </body>
+</html>
