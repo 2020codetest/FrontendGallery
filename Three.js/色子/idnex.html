@@ -29,41 +29,48 @@
                 const scene = new THREE.Object3D();
                 const textureLoader = new THREE.TextureLoader();
                 const geometry = new THREE.PlaneGeometry(50, 50, 50);
-                const material1 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("1.png")});
+                const material1 = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: textureLoader.load("1.png")});
                 const dice1 = new THREE.Mesh(geometry, material1);
                 dice1.rotation.x = Math.PI / 2;
                 dice1.position.y = -25
+                dice1.castShadow = true
                 scene.add(dice1);
 
-                const material2 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("2.png")});
+                const material2 = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: textureLoader.load("2.png")});
                 const dice2 = new THREE.Mesh(geometry, material2)
                 dice2.position.z = 25
+                dice2.castShadow = true
                 scene.add(dice2);
 
-                const material3 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("3.png")});
+                const material3 = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: textureLoader.load("3.png")});
                 const dice3 = new THREE.Mesh(geometry, material3)
                 dice3.rotation.y = Math.PI / 2;
                 dice3.position.x = 25;
+                dice3.castShadow = true
                 scene.add(dice3); 
 
-                const material4 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("4.png")});
+                const material4 = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: textureLoader.load("4.png")});
                 const dice4 = new THREE.Mesh(geometry, material4)
                 dice4.rotation.x = Math.PI
                 dice4.rotation.z = Math.PI
                 dice4.position.z = -25;
+                dice4.castShadow = true
                 scene.add(dice4); 
 
-                const material5 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("5.png")});
+                const material5 = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: textureLoader.load("5.png")});
                 const dice5 = new THREE.Mesh(geometry, material5)
                 dice5.rotation.y  = -Math.PI / 2;
                 dice5.position.x = -25;
+                dice5.castShadow = true
                 scene.add(dice5); 
 
-                const material6 = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: textureLoader.load("6.png")});
+                const material6 = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: textureLoader.load("6.png")});
                 const dice6 = new THREE.Mesh(geometry, material6)
                 dice6.rotation.x = -Math.PI / 2;
                 dice6.position.y = 25;
+                dice6.castShadow = true
                 scene.add(dice6);  
+                scene.castShadow = true;
                 return scene;               
             }
 
@@ -106,12 +113,18 @@
 
             function createBoard() {
                 const geometry = new THREE.PlaneGeometry( 1000, 1000, 32 );
-                const material = new THREE.MeshBasicMaterial( {color: 0xcccccc, side: THREE.DoubleSide} );
+                const material = new THREE.MeshLambertMaterial( {color: 0x00ff00, side: THREE.DoubleSide } );
                 const plane = new THREE.Mesh( geometry, material );
                 plane.rotation.x = Math.PI / 2;
                 plane.position.y = -25
+                plane.receiveShadow  = true
                 return plane;
             }
+
+            const directionalLight = new THREE.DirectionalLight( 0xffff00, 1 );
+            directionalLight.castShadow = true;
+            directionalLight.position.set(1, 1, 1)
+            scene.add( directionalLight );   
 
             const board = createBoard();
             scene.add(board);
@@ -121,13 +134,15 @@
             scene.add(dice1);
             scene.add(dice2);
             scene.add(dice3);
+
             const width = window.innerWidth;
             const height = window.innerHeight;
             renderer.setSize(width, height, false);
+            renderer.shadowMap.enabled = true;
             const k = width / height;
             const s = 500;
             const camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 6000);
-            camera.position.set(0, 300, 150);
+            camera.position.set(0, 300, 500);
             camera.lookAt(scene.position);
             function render() {
                 renderer.render(scene, camera)
