@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="three.js"></script>
+    <script src="cannon.js"></script>
+    <title>cannonjs物理引擎之彈跳的小球</title>
+</head>
+<body>
+    <div id="canvas"></div>
+    <script>
+        var scene,camera,renderer,container;
+        var WIDTH,HEIGHT;
+        var world,sphere,sphereBody;
+        // 創建物理世界
+        function initCannon(){
+            world = new CANNON.World();
+            world.gravity.set(0,-9.82,0);
+            world.broadphase = new CANNON.NaiveBroadphase();
+        }
+        // 創建渲染器
+        function initRender(){
+            WIDTH = window.innerWidth;
+            HEIGHT = window.innerHeight;
+            container = document.getElementById('canvas');
+            renderer = new THREE.WebGLRenderer({
+                alpha:true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(WIDTH,HEIGHT);
+            container.appendChild(renderer.domElement);
+        }   
+        // 創建場景 
+        function initScene(){
+            scene = new THREE.Scene();
+        }
+        // 創建相機
+        function initCamera(){
+            camera = new THREE.PerspectiveCamera(70,WIDTH/HEIGHT,1,10000);
+            camera.position.set(0,5,20);
+            //camera.lookAt(0,0,0);
+        }
+        // 創建環境光
+        function initLight(){
+            var light = new THREE.AmbientLight( 0xffffff ); // soft white light
+            scene.add( light );
+        }
+        // 創建對象
+        function initObject(){
+            //創建球形剛體
+            var sphereShape = new CANNON.Sphere(1); // 形狀
+            var sphere_cm = new CANNON.Material();  // 材質
+            sphereBody = new CANNON.Body({ // 剛體
+                mass: 5,    //質量
+                position: new CANNON.Vec3(0, 10, 0),    // 位置
+                shape: sphereShape, 
+                material: sphere_cm
+            })
+
+            world.add(sphereBody)
+            // 平面 Body
+            var groundShape = new CANNON.Plane();   // 形狀
+            var ground_cm = new CANNON.Material(); // 材質
+            var groundBody = new CANNON.Body({  // 剛體
+                mass: 0,    // 質量，質量爲0時爲靜態剛體
+                shape: groundShape,
+                material: ground_cm 
+            })
+            // setFromAxisAngle 旋轉 X 軸 -90 度
+            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+
+            world.add(groundBody)
+            var sphere_ground = new CANNON.ContactMaterial(ground_cm, sphere_cm, { //  定義兩個剛體相遇後會發生什麼
+                friction: 1,    // 摩擦係數
+                restitution: 0.9    // 恢復係數
+            })
+            world.addContactMaterial(sphere_ground) // 添加到世界中
+
+            // 平面網格
+            var groundGeometry = new THREE.PlaneGeometry(20, 20, 32)
+            var groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x7f7f7f,
+                side: THREE.DoubleSide, //這個屬性只知道是兩面，具體的不清楚，哪位知道可以留言告知，謝謝
+            })
+            var ground = new THREE.Mesh(groundGeometry, groundMaterial)
+            ground.rotation.x = -Math.PI / 2;   // 跟隨 前面的物理平面角度
+            scene.add(ground)
+
+            // 球網格
+            var sphereGeometry = new THREE.SphereGeometry(1, 32, 32)
+            var sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 })
+            sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
+            scene.add(sphere)
+        }
+        function initThree(){
+            initCannon();
+            initRender();
+            initScene();
+            initCamera();
+            initLight();
+            initObject();
+            animation();
+        }
+        function animation(){
+            requestAnimationFrame(animation);
+            renderer.render(scene,camera);
+
+            world.step(1 / 60)
+
+            if (sphere) {
+                sphere.position.copy(sphereBody.position)
+                sphere.quaternion.copy(sphereBody.quaternion)
+            }
+        }
+        initThree();
+    </script>
+    
+</body>
+</html>
